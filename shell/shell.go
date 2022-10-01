@@ -86,7 +86,7 @@ func (s *Shell) RemoveValue(key string) *err.EscargotError {
 // Range ranges over all the values in the shell and executes the given callback for each
 // value
 func (s *Shell) Range(cb callback.CallBackX) []*Shell {
-	results := []*Shell{}
+	results := make([]*Shell, len(s.values))
 
 	var wg sync.WaitGroup
 
@@ -108,9 +108,11 @@ func (s *Shell) Range(cb callback.CallBackX) []*Shell {
 }
 
 // RangeWithCancel works just like Range, but takes a context
-//// to cancel execution
+// to cancel execution
 func (s *Shell) RangeWithCancel(ctx context.Context, cb callback.CallBackX) []*Shell {
-	results := []*Shell{}
+	results := make([]*Shell, len(s.values))
+
+	ctx, cancel := context.WithCancel(ctx)
 
 	var wg sync.WaitGroup
 
@@ -122,7 +124,7 @@ func (s *Shell) RangeWithCancel(ctx context.Context, cb callback.CallBackX) []*S
 		go func(v any) {
 			defer wg.Done()
 
-			results = append(results, cb.CallBackXWithCancellation(ctx, v))
+			results = append(results, cb.CallBackXWithCancellation(ctx, cancel, v))
 		}(v)
 	}
 

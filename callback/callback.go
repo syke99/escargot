@@ -31,9 +31,7 @@ func (c CallBack) CallBack() *shell.Shell {
 
 // CallBackWithCancellation works just like CallBack, but takes a context
 // to cancel execution
-func (c CallBack) CallBackWithCancellation(ctx context.Context) *shell.Shell {
-
-	ctx, cancel := context.WithCancel(ctx)
+func (c CallBack) CallBackWithCancellation(ctx context.Context, cancel context.CancelFunc) *shell.Shell {
 
 	select {
 	default:
@@ -79,9 +77,7 @@ func (c CallBackX) CallBackX(value any) *shell.Shell {
 
 // CallBackXWithCancellation works just like CallBackX, but takes a context
 // to cancel execution
-func (c CallBackX) CallBackXWithCancellation(ctx context.Context, value any) *shell.Shell {
-
-	ctx, cancel := context.WithCancel(ctx)
+func (c CallBackX) CallBackXWithCancellation(ctx context.Context, cancel context.CancelFunc, value any) *shell.Shell {
 
 	select {
 	default:
