@@ -84,7 +84,7 @@ func (s *Shell) RemoveValue(key string) *err.EscargotError {
 
 // Range ranges over all the values in the shell and executes the given callback for each
 // value
-func (s *Shell) Range(cb callback.CallBack) []*Shell {
+func (s *Shell) Range(cb callback.CallBackX) []*Shell {
 	results := []*Shell{}
 
 	var wg sync.WaitGroup
@@ -97,7 +97,7 @@ func (s *Shell) Range(cb callback.CallBack) []*Shell {
 		go func(v any) {
 			defer wg.Done()
 
-			results = append(results, cb.CallBack(v))
+			results = append(results, cb.CallBackX(v))
 		}(v)
 	}
 
