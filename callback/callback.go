@@ -18,8 +18,8 @@ func (c CallBack) CallBack(value any) {
 
 	args[0] = value
 
-	for i := 0; i < len(c.args); i++ {
-		args[i+1] = c.args[i]
+	for i, v := range c.args {
+		args[i+1] = v
 	}
 
 	c.cb(args...)
