@@ -6,25 +6,25 @@ import (
 	"github.com/syke99/escargot/shell"
 )
 
-type tryFunc func(args ...any) *shell.Shell
+type tryFunc[A any] func(args ...A) *shell.Shell[A]
 
-type catchFunc func(err *err.EscargotError, args ...any)
+type catchFunc[A any] func(err *err.EscargotError, args ...A)
 
 // Trier will handle trying the TryFunc provided and execute the provided CatchFunc
 // on error
-type Trier struct {
-	tryFunc   func(args ...any) *shell.Shell
-	catchFunc func(err *err.EscargotError, args ...any)
+type Trier[A any] struct {
+	tryFunc   func(args ...A) *shell.Shell[A]
+	catchFunc func(err *err.EscargotError, args ...A)
 }
 
 // NewTrier will return a new Trier with the provided TryFunc and CatchFunc
-func NewTrier(try tryFunc, catch catchFunc) (Trier, error) {
+func NewTrier[A any](try tryFunc[A], catch catchFunc[A]) (Trier[A], error) {
 	if try == nil ||
 		catch == nil {
-		return Trier{}, errors.New("invalid Trier configuration")
+		return Trier[A]{}, errors.New("invalid Trier configuration")
 	}
 
-	return Trier{
+	return Trier[A]{
 		tryFunc:   try,
 		catchFunc: catch,
 	}, nil
@@ -33,7 +33,7 @@ func NewTrier(try tryFunc, catch catchFunc) (Trier, error) {
 // Try tries the Trier's TryFunc with the provided tryArgs, and on error,
 // will execute the Trier's CatchFunc with the provided catchArgs. It will
 // return a *shell.Shell to access any values and/or errors
-func (t Trier) Try(tryArgs []any, catchArgs []any) *shell.Shell {
+func (t Trier[A]) Try(tryArgs []A, catchArgs []A) *shell.Shell[A] {
 	result := t.tryFunc(tryArgs...)
 
 	if result.GetErrStatus() {
