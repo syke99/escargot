@@ -1,4 +1,4 @@
-package trier
+package try
 
 import (
 	"errors"
