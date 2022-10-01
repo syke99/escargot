@@ -20,7 +20,7 @@ func (e EscargotError) Unwrap() error {
 }
 
 // Err returns the error value stored inside the EscargotError this method is called on
-func (e EscargotError) Err(err error) {
+func (e *EscargotError) Err(err error) {
 	e.err = err
 }
 
