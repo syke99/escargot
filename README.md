@@ -1,6 +1,8 @@
 # escargot
 Go's try catch package
 
+Simple Hello World Example
+
 ```go
 package main
 
