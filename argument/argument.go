@@ -62,15 +62,17 @@ func (a *Arguments) GetArg(key string) (any, error) {
 	return &arg, nil
 }
 
-// OverRider is used to signal to *argument.Arguments.SetArg() that an argument
+type overRider struct{}
+
+// OverRide is used to signal to *argument.Arguments.SetArg() that an argument
 // value should be allowed to be overriden
-type OverRider struct{}
+type OverRide *overRider
 
 // SetArg checks for the existence of a provided key, as well as the existence of
 // an OverRider in case of a pre-existing key. If a key already exists but no
 // OverRider is provided, this method will error. If the key does not exist, the
 // value will be added to the arguments
-func (a *Arguments) SetArg(key string, value any, overrider *OverRider) error {
+func (a *Arguments) SetArg(key string, value any, override OverRide) error {
 	a.Lock()
 	defer a.Unlock()
 
@@ -80,7 +82,7 @@ func (a *Arguments) SetArg(key string, value any, overrider *OverRider) error {
 		return errors.New("no key provided to set argument with")
 	}
 
-	if ok && overrider == nil {
+	if ok && override == nil {
 		return errors.New("attempt to override argument value without a provided OverRider")
 	}
 
