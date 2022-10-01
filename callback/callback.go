@@ -29,7 +29,7 @@ type CallBackX struct {
 // a specific *shell.Shell value added to the arguments in the callback
 // function
 func (c CallBack) CallBack() *shell.Shell {
-	args := make([]any, c.argsx.GetArgsLength())
+	args := make([]any, len(c.argsx.GetArgsSlice()))
 
 	for _, v := range c.argsx.GetArgsSlice() {
 		args = append(args, v)
@@ -73,7 +73,7 @@ func (c CallBack) CallBackWithCancellation(ctx context.Context, cancel context.C
 // the arguments in the callback function, use CallBackX
 func (c CallBackX) CallBackX(value any) *shell.Shell {
 
-	args := make([]any, c.argsx.GetArgsLength()+1)
+	args := make([]any, len(c.argsx.GetArgsSlice())+1)
 
 	args[0] = value
 

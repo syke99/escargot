@@ -30,11 +30,6 @@ func NewArguments(key string, value any) *Arguments {
 	return &args
 }
 
-// GetArgsLength returns the current number of arguments set
-func (a *Arguments) GetArgsLength() int {
-	return len(a.args)
-}
-
 // GetArgsSlice returns a slice of arguments currently set in the
 // *argument.Arguments this method is called on
 func (a *Arguments) GetArgsSlice() []any {

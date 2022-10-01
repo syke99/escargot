@@ -35,7 +35,7 @@ func NewTrier(try tryFunc, catch catchFunc) (Trier, error) {
 // will execute the Trier's CatchFunc with the provided catchArgs. It will
 // return a *shell.Shell to access any values and/or errors
 func (t Trier) Try(tryArgs argument.Arguments, catchArgs argument.Arguments) *shell.Shell {
-	targs := make([]any, tryArgs.GetArgsLength())
+	targs := make([]any, len(tryArgs.GetArgsSlice()))
 
 	for _, arg := range tryArgs.GetArgsSlice() {
 		targs = append(targs, arg)
@@ -44,7 +44,7 @@ func (t Trier) Try(tryArgs argument.Arguments, catchArgs argument.Arguments) *sh
 	result := t.tryFunc(targs...)
 
 	if result.GetErrStatus() {
-		cargs := make([]any, catchArgs.GetArgsLength())
+		cargs := make([]any, len(catchArgs.GetArgsSlice()))
 
 		for _, arg := range catchArgs.GetArgsSlice() {
 			cargs = append(cargs, arg)
