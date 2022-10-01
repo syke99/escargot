@@ -7,15 +7,15 @@ import (
 	"github.com/syke99/escargot/shell"
 )
 
-type tryFunc func(args ...argument.Arguments) *shell.Shell
+type tryFunc func(args ...any) *shell.Shell
 
-type catchFunc func(err *err.EscargotError, args ...argument.Arguments)
+type catchFunc func(err *err.EscargotError, args ...any)
 
 // Trier will handle trying the TryFunc provided and execute the provided CatchFunc
 // on error
 type Trier struct {
-	tryFunc   func(args ...argument.Arguments) *shell.Shell
-	catchFunc func(err *err.EscargotError, args ...argument.Arguments)
+	tryFunc   func(args ...any) *shell.Shell
+	catchFunc func(err *err.EscargotError, args ...any)
 }
 
 // NewTrier will return a new Trier with the provided TryFunc and CatchFunc
@@ -34,11 +34,23 @@ func NewTrier(try tryFunc, catch catchFunc) (Trier, error) {
 // Try tries the Trier's TryFunc with the provided tryArgs, and on error,
 // will execute the Trier's CatchFunc with the provided catchArgs. It will
 // return a *shell.Shell to access any values and/or errors
-func (t Trier) Try(tryArgs []argument.Arguments, catchArgs []argument.Arguments) *shell.Shell {
-	result := t.tryFunc(tryArgs...)
+func (t Trier) Try(tryArgs argument.Arguments, catchArgs argument.Arguments) *shell.Shell {
+	targs := make([]any, tryArgs.GetArgsLength())
+
+	for _, arg := range tryArgs.GetArgsSlice() {
+		targs = append(targs, arg)
+	}
+
+	result := t.tryFunc(targs...)
 
 	if result.GetErrStatus() {
-		t.catchFunc(result.GetErr(), catchArgs...)
+		cargs := make([]any, catchArgs.GetArgsLength())
+
+		for _, arg := range catchArgs.GetArgsSlice() {
+			cargs = append(cargs, arg)
+		}
+
+		t.catchFunc(result.GetErr(), cargs...)
 	}
 
 	return result

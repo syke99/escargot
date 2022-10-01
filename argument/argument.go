@@ -47,6 +47,10 @@ func (a *Arguments) GetArgsSlice() []any {
 func (a *Arguments) GetArg(key string) (any, error) {
 	arg, ok := a.args[key]
 
+	if key == "" {
+		return nil, errors.New("no key provided to retrieve argument with")
+	}
+
 	if !ok {
 		return nil, errors.New("argument does not exist in this set of arguments")
 	}
@@ -64,6 +68,10 @@ type OverRider struct{}
 // value will be added to the arguments
 func (a *Arguments) SetArg(key string, value any, overrider *OverRider) error {
 	_, ok := a.args[key]
+
+	if key == "" {
+		return errors.New("no key provided to set argument with")
+	}
 
 	if ok && overrider == nil {
 		return errors.New("attempt to override argument value without a provided OverRider")
