@@ -11,17 +11,17 @@ import (
 // CallBack is used to perform callback functions without specific
 // *shell.Shell values
 type CallBack struct {
-	args []any
-	x    argument.Arguments
-	cb   func(...any) *shell.Shell
+	args  []any
+	argsx argument.Arguments
+	cb    func(...any) *shell.Shell
 }
 
 // CallBackX is used to perform callback functions on specific
 // *shell.Shell values
 type CallBackX struct {
-	args []any
-	x    argument.Arguments
-	cb   func(...any) *shell.Shell
+	args  []any
+	argsx argument.Arguments
+	cb    func(...any) *shell.Shell
 }
 
 // CallBack executes the callback function provided just like
@@ -29,10 +29,10 @@ type CallBackX struct {
 // a specific *shell.Shell value added to the arguments in the callback
 // function
 func (c CallBack) CallBack() *shell.Shell {
-	args := make([]any, c.x.GetArgsLength())
+	args := make([]any, c.argsx.GetArgsLength())
 
-	for _, v := range c.x.GetArgsSlice() {
-		args = append(args, &v)
+	for _, v := range c.argsx.GetArgsSlice() {
+		args = append(args, v)
 	}
 
 	return c.cb(c.args...)
@@ -73,11 +73,11 @@ func (c CallBack) CallBackWithCancellation(ctx context.Context, cancel context.C
 // the arguments in the callback function, use CallBackX
 func (c CallBackX) CallBackX(value any) *shell.Shell {
 
-	args := make([]any, c.x.GetArgsLength()+1)
+	args := make([]any, c.argsx.GetArgsLength()+1)
 
 	args[0] = value
 
-	for i, v := range c.x.GetArgsSlice() {
+	for i, v := range c.argsx.GetArgsSlice() {
 		args[i+1] = v
 	}
 
