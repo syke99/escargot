@@ -13,6 +13,7 @@ import (
 // Shell holds the value(s) and/or EscargotError produced whenever attempting to try the
 // provided tryFunc
 type Shell struct {
+	sync.RWMutex
 	values map[string]any
 	err    *err.EscargotError
 }
@@ -39,6 +40,9 @@ func (s *Shell) GetErr() *err.EscargotError {
 // an interface (any). You can then use the value as you would any interface
 // value (casting, switching, reflection, etc.)
 func (s *Shell) GetValue(key string) any {
+	s.Lock()
+	defer s.Unlock()
+
 	v, ok := s.values[key]
 	if !ok {
 		er := errors.New("attempt to access non-existent value")

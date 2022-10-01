@@ -2,6 +2,7 @@ package argument
 
 import (
 	"errors"
+	"sync"
 )
 
 // Arguments holds the arguments you wish to use in a callback.CallBack. It is
@@ -11,6 +12,7 @@ import (
 // this allows for a more strict guarantee that the value will correctly be
 // asserted to the desired type at runtime
 type Arguments struct {
+	sync.RWMutex
 	args map[string]*any
 }
 
@@ -45,6 +47,8 @@ func (a *Arguments) GetArgsSlice() []any {
 
 // GetArg returns the argument set with the given key
 func (a *Arguments) GetArg(key string) (any, error) {
+	a.Lock()
+	defer a.Unlock()
 	arg, ok := a.args[key]
 
 	if key == "" {
@@ -67,6 +71,9 @@ type OverRider struct{}
 // OverRider is provided, this method will error. If the key does not exist, the
 // value will be added to the arguments
 func (a *Arguments) SetArg(key string, value any, overrider *OverRider) error {
+	a.Lock()
+	defer a.Unlock()
+
 	_, ok := a.args[key]
 
 	if key == "" {
