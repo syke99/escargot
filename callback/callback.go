@@ -3,35 +3,44 @@ package callback
 import (
 	"context"
 	"errors"
+	"github.com/syke99/escargot/argument"
 	err "github.com/syke99/escargot/error"
 	"github.com/syke99/escargot/shell"
 )
 
 // CallBack is used to perform callback functions without specific
 // *shell.Shell values
-type CallBack[A any] struct {
-	args []A
-	cb   func(...A) *shell.Shell[A]
+type CallBack struct {
+	args []any
+	x    argument.Arguments
+	cb   func(...any) *shell.Shell
 }
 
 // CallBackX is used to perform callback functions on specific
 // *shell.Shell values
-type CallBackX[A any] struct {
-	args []A
-	cb   func(...A) *shell.Shell[A]
+type CallBackX struct {
+	args []any
+	x    argument.Arguments
+	cb   func(...any) *shell.Shell
 }
 
 // CallBack executes the callback function provided just like
 // callback.CallBack.Callback(), the only difference is it executes without
 // a specific *shell.Shell value added to the arguments in the callback
 // function
-func (c CallBack[A]) CallBack() *shell.Shell[A] {
+func (c CallBack) CallBack() *shell.Shell {
+	args := make([]any, c.x.GetArgsLength())
+
+	for _, v := range c.x.GetArgsSlice() {
+		args = append(args, &v)
+	}
+
 	return c.cb(c.args...)
 }
 
 // CallBackWithCancellation works just like CallBack, but takes a context
 // to cancel execution
-func (c CallBack[A]) CallBackWithCancellation(ctx context.Context, cancel context.CancelFunc) *shell.Shell[A] {
+func (c CallBack) CallBackWithCancellation(ctx context.Context, cancel context.CancelFunc) *shell.Shell {
 
 	select {
 	default:
@@ -48,7 +57,7 @@ func (c CallBack[A]) CallBackWithCancellation(ctx context.Context, cancel contex
 			Msg:   "context cancel signal received",
 		}
 
-		res := shell.Shell[A]{}
+		res := shell.Shell{}
 
 		r := &res
 
@@ -62,13 +71,13 @@ func (c CallBack[A]) CallBackWithCancellation(ctx context.Context, cancel contex
 // the current iteration of Ranging over the *shell.Shell values, to
 // execute a callback function without a *shell.Shell value added to
 // the arguments in the callback function, use CallBackX
-func (c CallBackX[A]) CallBackX(value A) *shell.Shell[A] {
+func (c CallBackX) CallBackX(value any) *shell.Shell {
 
-	args := make([]A, len(c.args)+1)
+	args := make([]any, c.x.GetArgsLength()+1)
 
 	args[0] = value
 
-	for i, v := range c.args {
+	for i, v := range c.x.GetArgsSlice() {
 		args[i+1] = v
 	}
 
@@ -77,11 +86,11 @@ func (c CallBackX[A]) CallBackX(value A) *shell.Shell[A] {
 
 // CallBackXWithCancellation works just like CallBackX, but takes a context
 // to cancel execution
-func (c CallBackX[A]) CallBackXWithCancellation(ctx context.Context, cancel context.CancelFunc, value A) *shell.Shell[A] {
+func (c CallBackX) CallBackXWithCancellation(ctx context.Context, cancel context.CancelFunc, value any) *shell.Shell {
 
 	select {
 	default:
-		args := make([]A, len(c.args)+1)
+		args := make([]any, len(c.args)+1)
 
 		args[0] = value
 
@@ -102,7 +111,7 @@ func (c CallBackX[A]) CallBackXWithCancellation(ctx context.Context, cancel cont
 			Msg:   "context cancel signal received",
 		}
 
-		res := shell.Shell[A]{}
+		res := shell.Shell{}
 
 		r := &res
 
@@ -112,29 +121,29 @@ func (c CallBackX[A]) CallBackXWithCancellation(ctx context.Context, cancel cont
 	}
 }
 
-// NewCallBackX returns a CallBack used in ranging over *shell.Shell values
+// NewCallBackX returns a CallBackX used in ranging over *shell.Shell values
 // it takes the callback function expected, plus any arguments expected,
 // minus the value. The callback function signature must match
 // func(...any) *shell.Shell and the first argument will be the value
 // in the current iteration of the range. All following arguments to the
 // callback function will be the arguments provided
-func NewCallBackX[A any](cb func(...A) *shell.Shell[A], args ...A) (CallBackX[A], error) {
+func NewCallBackX(cb func(...any) *shell.Shell, args ...any) (CallBackX, error) {
 	if cb == nil {
-		return CallBackX[A]{}, errors.New("invalid callback configuration")
+		return CallBackX{}, errors.New("invalid callback configuration")
 	}
 
-	return CallBackX[A]{
+	return CallBackX{
 		args: args,
 		cb:   cb,
 	}, nil
 }
 
-func NewCallBack[A any](cb func(...A) *shell.Shell[A], args ...A) (CallBack[A], error) {
+func NewCallBack(cb func(...any) *shell.Shell, args ...any) (CallBack, error) {
 	if cb == nil {
-		return CallBack[A]{}, errors.New("invalid callback configuration")
+		return CallBack{}, errors.New("invalid callback configuration")
 	}
 
-	return CallBack[A]{
+	return CallBack{
 		args: args,
 		cb:   cb,
 	}, nil

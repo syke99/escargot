@@ -12,18 +12,18 @@ import (
 
 // Shell holds the value(s) and/or EscargotError produced whenever attempting to try the
 // provided tryFunc
-type Shell[A any] struct {
-	values map[string]A
+type Shell struct {
+	values map[string]any
 	err    *err.EscargotError
 }
 
 // Err sets an err
-func (s *Shell[A]) Err(err *err.EscargotError) {
+func (s *Shell) Err(err *err.EscargotError) {
 	s.err = err
 }
 
 // GetErrStatus returns the status of whether err is set
-func (s *Shell[A]) GetErrStatus() bool {
+func (s *Shell) GetErrStatus() bool {
 	if s.err == nil {
 		return false
 	}
@@ -31,14 +31,14 @@ func (s *Shell[A]) GetErrStatus() bool {
 }
 
 // GetErr returns the EscargotError created whenever attempting to try the provided tryFunc
-func (s *Shell[A]) GetErr() *err.EscargotError {
+func (s *Shell) GetErr() *err.EscargotError {
 	return s.err
 }
 
 // GetValue returns the value stored in the Shell with the given key as
 // an interface (any). You can then use the value as you would any interface
 // value (casting, switching, reflection, etc.)
-func (s *Shell[A]) GetValue(key string) any {
+func (s *Shell) GetValue(key string) any {
 	v, ok := s.values[key]
 	if !ok {
 		er := errors.New("attempt to access non-existent value")
@@ -58,12 +58,12 @@ func (s *Shell[A]) GetValue(key string) any {
 
 // SetValue sets the given value in the shell with the given key. To retrieve the value,
 // use *Shell.GetValue(key string). To remove the value, use *Shell.RemoveValue(key string) *error.Escargot
-func (s *Shell[A]) SetValue(key string, value any) {
+func (s *Shell) SetValue(key string, value any) {
 	s.values[key] = value
 }
 
 // RemoveValue removes the value from the shell with the given key if it exists
-func (s *Shell[A]) RemoveValue(key string) *err.EscargotError {
+func (s *Shell) RemoveValue(key string) *err.EscargotError {
 	_, ok := s.values[key]
 	if !ok {
 		er := errors.New("attempt to delete non-existent value")
@@ -85,8 +85,8 @@ func (s *Shell[A]) RemoveValue(key string) *err.EscargotError {
 
 // Range ranges over all the values in the shell and executes the given callback for each
 // value
-func (s *Shell[A]) Range(cb callback.CallBackX[A]) []*Shell[A] {
-	results := make([]*Shell[A], len(s.values))
+func (s *Shell) Range(cb callback.CallBackX) []*Shell {
+	results := make([]*Shell, len(s.values))
 
 	var wg sync.WaitGroup
 
@@ -109,8 +109,8 @@ func (s *Shell[A]) Range(cb callback.CallBackX[A]) []*Shell[A] {
 
 // RangeWithCancel works just like Range, but takes a context
 // to cancel execution
-func (s *Shell[A]) RangeWithCancel(ctx context.Context, cb callback.CallBackX[A]) []*Shell[A] {
-	results := make([]*Shell[A], len(s.values))
+func (s *Shell) RangeWithCancel(ctx context.Context, cb callback.CallBackX) ([]*Shell, context.CancelFunc) {
+	results := make([]*Shell, len(s.values))
 
 	ctx, cancel := context.WithCancel(ctx)
 
@@ -130,5 +130,5 @@ func (s *Shell[A]) RangeWithCancel(ctx context.Context, cb callback.CallBackX[A]
 
 	wg.Wait()
 
-	return results
+	return results, cancel
 }
