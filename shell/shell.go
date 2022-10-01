@@ -19,6 +19,11 @@ type Shell struct {
 	err    *err.EscargotError
 }
 
+var errVal = Shell{
+	values: make(map[string]any),
+	err:    nil,
+}
+
 // Err sets an err
 func (s *Shell) Err(err *err.EscargotError) {
 	s.err = err
@@ -54,7 +59,7 @@ func (s *Shell) GetValue(key string) any {
 
 		escErr.Err(er)
 
-		return escErr
+		return &escErr
 	}
 
 	v, ok := s.values[key]
@@ -69,7 +74,7 @@ func (s *Shell) GetValue(key string) any {
 
 		escErr.Err(er)
 
-		return escErr
+		return &escErr
 	}
 
 	return v
@@ -125,6 +130,46 @@ func (s *Shell) RemoveValue(key string) *err.EscargotError {
 	delete(s.values, key)
 
 	return &err.EscargotError{}
+}
+
+// CallBack executes a callback.CallBackX function on the value returned from
+// the given key. This method will error if a key is not provided or a value is not
+// set at the given key
+func (s *Shell) CallBack(key string, cb callback.CallBackX) *Shell {
+
+	if key == "" {
+		er := errors.New("attempt to set value with non-existent key")
+
+		escErr := err.EscargotError{
+			Level: "Error",
+			Msg:   "no key provided",
+		}
+
+		escErr.Err(er)
+
+		errVal.Err(&escErr)
+
+		return &errVal
+	}
+
+	v, ok := s.values[key]
+
+	if !ok {
+		er := errors.New("attempt to access non-existent value")
+
+		escErr := err.EscargotError{
+			Level: "Error",
+			Msg:   fmt.Sprintf("value with key %s does not exist", key),
+		}
+
+		escErr.Err(er)
+
+		errVal.Err(&escErr)
+
+		return &errVal
+	}
+
+	return cb.CallBackX(v)
 }
 
 // Range ranges over all the values in the shell and executes the given callback for each
