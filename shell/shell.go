@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -98,6 +99,30 @@ func (s *Shell) Range(cb callback.CallBackX) []*Shell {
 			defer wg.Done()
 
 			results = append(results, cb.CallBackX(v))
+		}(v)
+	}
+
+	wg.Wait()
+
+	return results
+}
+
+// RangeWithCancel works just like Range, but takes a context
+//// to cancel execution
+func (s *Shell) RangeWithCancel(ctx context.Context, cb callback.CallBackX) []*Shell {
+	results := []*Shell{}
+
+	var wg sync.WaitGroup
+
+	for _, v := range s.values {
+		v := v
+
+		wg.Add(1)
+
+		go func(v any) {
+			defer wg.Done()
+
+			results = append(results, cb.CallBackXWithCancellation(ctx, v))
 		}(v)
 	}
 

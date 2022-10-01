@@ -1,9 +1,18 @@
 package callback
 
 import (
+	"context"
 	"errors"
+	err "github.com/syke99/escargot/error"
 	"github.com/syke99/escargot/shell"
 )
+
+// CallBack is used to perform callback functions without specific
+// *shell.Shell values
+type CallBack struct {
+	args []any
+	cb   func(...any) *shell.Shell
+}
 
 // CallBackX is used to perform callback functions on specific
 // *shell.Shell values
@@ -12,11 +21,43 @@ type CallBackX struct {
 	cb   func(...any) *shell.Shell
 }
 
-// CallBack is used to perform callback functions without specific
-// *shell.Shell values
-type CallBack struct {
-	args []any
-	cb   func(...any) *shell.Shell
+// CallBack executes the callback function provided just like
+// callback.CallBack.Callback(), the only difference is it executes without
+// a specific *shell.Shell value added to the arguments in the callback
+// function
+func (c CallBack) CallBack() *shell.Shell {
+	return c.cb(c.args)
+}
+
+// CallBackWithCancellation works just like CallBack, but takes a context
+// to cancel execution
+func (c CallBack) CallBackWithCancellation(ctx context.Context) *shell.Shell {
+
+	ctx, cancel := context.WithCancel(ctx)
+
+	select {
+	default:
+		res := c.cb(c.args)
+
+		if res.GetErrStatus() {
+			cancel()
+		}
+
+		return res
+	case <-ctx.Done():
+		er := err.EscargotError{
+			Level: "Cancel",
+			Msg:   "context cancel signal received",
+		}
+
+		res := shell.Shell{}
+
+		r := &res
+
+		r.Err(&er)
+
+		return r
+	}
 }
 
 // CallBackX executes the callback function provided on the value of
@@ -36,12 +77,43 @@ func (c CallBackX) CallBackX(value any) *shell.Shell {
 	return c.cb(args...)
 }
 
-// CallBack executes the callback function provided just like
-// callback.CallBack.Callback(), the only difference is it executes without
-// a specific *shell.Shell value added to the arguments in the callback
-// function
-func (c CallBack) CallBack() *shell.Shell {
-	return c.cb(c.args)
+// CallBackXWithCancellation works just like CallBackX, but takes a context
+// to cancel execution
+func (c CallBackX) CallBackXWithCancellation(ctx context.Context, value any) *shell.Shell {
+
+	ctx, cancel := context.WithCancel(ctx)
+
+	select {
+	default:
+		args := make([]any, len(c.args)+1)
+
+		args[0] = value
+
+		for i, v := range c.args {
+			args[i+1] = v
+		}
+
+		res := c.cb(args...)
+
+		if res.GetErrStatus() {
+			cancel()
+		}
+
+		return res
+	case <-ctx.Done():
+		er := err.EscargotError{
+			Level: "Cancel",
+			Msg:   "context cancel signal received",
+		}
+
+		res := shell.Shell{}
+
+		r := &res
+
+		r.Err(&er)
+
+		return r
+	}
 }
 
 // NewCallBackX returns a CallBack used in ranging over *shell.Shell values
