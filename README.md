@@ -15,6 +15,8 @@ import (
 	"log"
 )
 
+// printHelloWorld is the function to be tried. The function signature
+// must match func(args ...any) *shell.Shell
 func printHelloWorld(args ...any) *shell.Shell {
 	e := err.EscargotError{
 		Level: "",
@@ -57,6 +59,8 @@ func printHelloWorld(args ...any) *shell.Shell {
 	return &shell.Shell{}
 }
 
+// errFunc is the function to be ran in case of error. The function signature
+// must match func(e *err.EscargotError, args ...any) *shell.Shell
 func errFunc(e *err.EscargotError, args ...any) {
 	if e.Unwrap() != nil {
 		log.Fatal(e.Unwrap())
