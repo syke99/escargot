@@ -11,7 +11,7 @@ import (
 	"fmt"
 	err "github.com/syke99/escargot/error"
 	"github.com/syke99/escargot/shell"
-	"github.com/syke99/escargot/trier"
+	"github.com/syke99/escargot/try"
 	"log"
 )
 
