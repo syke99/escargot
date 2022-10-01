@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/syke99/escargot/internal/override"
 	"sync"
 
 	"github.com/syke99/escargot/callback"
@@ -43,7 +44,21 @@ func (s *Shell) GetValue(key string) any {
 	s.Lock()
 	defer s.Unlock()
 
+	if key == "" {
+		er := errors.New("attempt to set value with non-existent key")
+
+		escErr := err.EscargotError{
+			Level: "Error",
+			Msg:   "no key provided",
+		}
+
+		escErr.Err(er)
+
+		return escErr
+	}
+
 	v, ok := s.values[key]
+
 	if !ok {
 		er := errors.New("attempt to access non-existent value")
 
@@ -60,14 +75,39 @@ func (s *Shell) GetValue(key string) any {
 	return v
 }
 
+// OverRide is used to signal to *shell.Shell.SetValue() that a
+// value should be allowed to be overriden
+type OverRide *override.OverRider
+
 // SetValue sets the given value in the shell with the given key. To retrieve the value,
 // use *Shell.GetValue(key string). To remove the value, use *Shell.RemoveValue(key string) *error.Escargot
-func (s *Shell) SetValue(key string, value any) {
+func (s *Shell) SetValue(key string, value any) any {
+	s.Lock()
+	defer s.Unlock()
+
+	if key == "" {
+		er := errors.New("no key provided to set value with")
+
+		escErr := err.EscargotError{
+			Level: "Error",
+			Msg:   "no key provided",
+		}
+
+		escErr.Err(er)
+
+		return escErr
+	}
+
 	s.values[key] = value
+
+	return nil
 }
 
 // RemoveValue removes the value from the shell with the given key if it exists
 func (s *Shell) RemoveValue(key string) *err.EscargotError {
+	s.Lock()
+	defer s.Unlock()
+
 	_, ok := s.values[key]
 	if !ok {
 		er := errors.New("attempt to delete non-existent value")

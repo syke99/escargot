@@ -2,6 +2,8 @@ package argument
 
 import (
 	"errors"
+	err "github.com/syke99/escargot/error"
+	"github.com/syke99/escargot/internal/override"
 	"sync"
 )
 
@@ -46,49 +48,83 @@ func (a *Arguments) GetArgsSlice() []any {
 }
 
 // GetArg returns the argument set with the given key
-func (a *Arguments) GetArg(key string) (any, error) {
+func (a *Arguments) GetArg(key string) (any, err.EscargotError) {
 	a.Lock()
 	defer a.Unlock()
 	arg, ok := a.args[key]
 
 	if key == "" {
-		return nil, errors.New("no key provided to retrieve argument with")
+		er := errors.New("no key provided to retrieve argument with")
+
+		escErr := err.EscargotError{
+			Level: "Error",
+			Msg:   "no key provided",
+		}
+
+		escErr.Err(er)
+
+		return nil, escErr
 	}
 
 	if !ok {
-		return nil, errors.New("argument does not exist in this set of arguments")
+		er := errors.New("argument does not exist in this set of arguments")
+
+		escErr := err.EscargotError{
+			Level: "Error",
+			Msg:   "nox-existent argument in arguments",
+		}
+
+		escErr.Err(er)
+
+		return nil, escErr
 	}
 
-	return &arg, nil
+	return &arg, err.EscargotError{}
 }
-
-type overRider struct{}
 
 // OverRide is used to signal to *argument.Arguments.SetArg() that an argument
 // value should be allowed to be overriden
-type OverRide *overRider
+type OverRide *override.OverRider
 
 // SetArg checks for the existence of a provided key, as well as the existence of
 // an OverRider in case of a pre-existing key. If a key already exists but no
 // OverRider is provided, this method will error. If the key does not exist, the
 // value will be added to the arguments
-func (a *Arguments) SetArg(key string, value any, override OverRide) error {
+func (a *Arguments) SetArg(key string, value any, override OverRide) err.EscargotError {
 	a.Lock()
 	defer a.Unlock()
 
-	_, ok := a.args[key]
-
 	if key == "" {
-		return errors.New("no key provided to set argument with")
+		er := errors.New("no key provided to set argument with")
+
+		escErr := err.EscargotError{
+			Level: "Error",
+			Msg:   "no key provided",
+		}
+
+		escErr.Err(er)
+
+		return escErr
 	}
 
+	_, ok := a.args[key]
+
 	if ok && override == nil {
-		return errors.New("attempt to override argument value without a provided OverRider")
+		er := errors.New("attempt to override argument value without a provided OverRider")
+
+		escErr := err.EscargotError{
+			Level: "Error",
+			Msg:   "override not explicitly allowed",
+		}
+
+		escErr.Err(er)
+
+		return escErr
 	}
 
 	a.args[key] = &value
 
-	return nil
+	return err.EscargotError{}
 }
 
 // RemoveArg removes the argument from the *argument.Arguments this method is
