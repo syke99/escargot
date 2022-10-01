@@ -22,7 +22,7 @@ func (s *Shell) Err(err *err.EscargotError) {
 }
 
 // GetErrStatus returns the status of whether err is set
-func (s Shell) GetErrStatus() bool {
+func (s *Shell) GetErrStatus() bool {
 	if s.err == nil {
 		return false
 	}
@@ -84,7 +84,9 @@ func (s *Shell) RemoveValue(key string) *err.EscargotError {
 
 // Range ranges over all the values in the shell and executes the given callback for each
 // value
-func (s *Shell) Range(cb callback.CallBack) {
+func (s *Shell) Range(cb callback.CallBack) []*Shell {
+	results := []*Shell{}
+
 	var wg sync.WaitGroup
 
 	for _, v := range s.values {
@@ -95,9 +97,11 @@ func (s *Shell) Range(cb callback.CallBack) {
 		go func(v any) {
 			defer wg.Done()
 
-			cb.CallBack(v)
+			results = append(results, cb.CallBack(v))
 		}(v)
 	}
 
 	wg.Wait()
+
+	return results
 }

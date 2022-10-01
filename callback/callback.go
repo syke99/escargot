@@ -12,7 +12,7 @@ type CallBack struct {
 
 // CallBack executes the callback function provided on the value of
 // the current iteration of Ranging over the *shell.Shell values
-func (c CallBack) CallBack(value any) {
+func (c CallBack) CallBack(value any) *shell.Shell {
 
 	args := make([]any, len(c.args)+1)
 
@@ -22,7 +22,7 @@ func (c CallBack) CallBack(value any) {
 		args[i+1] = v
 	}
 
-	c.cb(args...)
+	return c.cb(args...)
 }
 
 // NewCallBack returns a CallBack used in ranging over *shell.Shell values
