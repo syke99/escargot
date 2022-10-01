@@ -2,9 +2,10 @@ package argument
 
 import (
 	"errors"
+	"sync"
+
 	err "github.com/syke99/escargot/error"
 	"github.com/syke99/escargot/internal/override"
-	"sync"
 )
 
 // Arguments holds the arguments you wish to use in a callback.CallBack. It is
@@ -14,7 +15,7 @@ import (
 // this allows for a more strict guarantee that the value will correctly be
 // asserted to the desired type at runtime
 type Arguments struct {
-	sync.RWMutex
+	*sync.RWMutex
 	args map[string]*any
 }
 

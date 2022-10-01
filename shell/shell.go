@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/syke99/escargot/internal/override"
 	"sync"
+
+	"github.com/syke99/escargot/internal/override"
 
 	"github.com/syke99/escargot/callback"
 	err "github.com/syke99/escargot/error"
@@ -31,10 +32,10 @@ func (s *Shell) Err(err *err.EscargotError) {
 
 // GetErrStatus returns the status of whether err is set
 func (s *Shell) GetErrStatus() bool {
-	if s.err == nil {
-		return false
+	if s.err != nil {
+		return true
 	}
-	return true
+	return false
 }
 
 // GetErr returns the EscargotError created whenever attempting to try the provided tryFunc
@@ -169,7 +170,17 @@ func (s *Shell) CallBack(key string, cb callback.CallBackX) *Shell {
 		return &errVal
 	}
 
-	return cb.CallBackX(v)
+	sh := Shell{
+		values: make(map[string]any),
+		err:    nil,
+	}
+
+	val, er := cb.CallBackX(v)
+
+	sh.SetValue("value", val)
+	sh.Err(er)
+
+	return &sh
 }
 
 // Range ranges over all the values in the shell and executes the given callback for each
@@ -187,7 +198,17 @@ func (s *Shell) Range(cb callback.CallBackX) []*Shell {
 		go func(v any) {
 			defer wg.Done()
 
-			results = append(results, cb.CallBackX(v))
+			sh := Shell{
+				values: make(map[string]any),
+				err:    nil,
+			}
+
+			val, er := cb.CallBackX(v)
+
+			sh.SetValue("value", val)
+			sh.Err(er)
+
+			results = append(results, &sh)
 		}(v)
 	}
 
@@ -213,7 +234,17 @@ func (s *Shell) RangeWithCancel(ctx context.Context, cb callback.CallBackX) ([]*
 		go func(v any) {
 			defer wg.Done()
 
-			results = append(results, cb.CallBackXWithCancellation(ctx, cancel, v))
+			sh := Shell{
+				values: make(map[string]any),
+				err:    nil,
+			}
+
+			val, er := cb.CallBackXWithCancellation(ctx, cancel, v)
+
+			sh.SetValue("value", val)
+			sh.Err(er)
+
+			results = append(results, &sh)
 		}(v)
 	}
 
