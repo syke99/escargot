@@ -21,7 +21,7 @@ type Arguments struct {
 
 // NewArguments returns a pointer to a new Arguments struct so that
 // arguments can be added and removed across your application
-func NewArguments(key string, value any) *Arguments {
+func NewArguments() *Arguments {
 	args := Arguments{}
 
 	argMap := make(map[string]*any)

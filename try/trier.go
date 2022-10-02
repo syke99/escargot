@@ -9,7 +9,7 @@ import (
 
 type TryFunc func(args argument.Arguments) *shell.Shell
 
-type CatchFunc func(err *err.EscargotError, args ...argument.Arguments) *shell.Shell
+type CatchFunc func(err *err.EscargotError, args argument.Arguments) *shell.Shell
 
 type FinallyFunc func(args argument.Arguments) *shell.Shell
 
@@ -17,7 +17,7 @@ type FinallyFunc func(args argument.Arguments) *shell.Shell
 // on error
 type Trier struct {
 	try     func(args argument.Arguments) *shell.Shell
-	catch   func(err *err.EscargotError, args ...argument.Arguments) *shell.Shell
+	catch   func(err *err.EscargotError, args argument.Arguments) *shell.Shell
 	finally func(args argument.Arguments) *shell.Shell
 }
 

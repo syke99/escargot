@@ -7,9 +7,9 @@ Simple Hello World Example
 package main
 
 import (
-	"errors"
 	"fmt"
-	err "github.com/syke99/escargot/error"
+	"github.com/syke99/escargot/argument"
+	"github.com/syke99/escargot/error"
 	"github.com/syke99/escargot/shell"
 	"github.com/syke99/escargot/try"
 	"log"
@@ -17,63 +17,49 @@ import (
 
 // printHelloWorld is the function to be tried. The function signature
 // must match func(args ...any) *shell.Shell
-func printHelloWorld(args ...any) *shell.Shell {
-	e := err.EscargotError{
-		Level: "",
-		Msg:   "",
-	}
-
-	defer func(er *err.EscargotError) *shell.Shell {
-		if r := recover(); r != nil {
-			e.Level = "Panic"
-			e.Msg = "recovered during tryFunc"
-			e.Err(errors.New("recovered from panic"))
-		}
-
-		res := shell.Shell{}
-
-		res.Err(er)
-
-		return &res
-	}(&e)
-
-	if len(args) == 0 {
-		e.Level = "Fatal"
-		e.Msg = "No arguments provided to TryFunc"
-
-		er := errors.New("invalid call to printHelloWorld")
-
-		e.Err(er)
-
+func printHelloWorld(args argument.Arguments) *shell.Shell {
+	helloWorld, err := args.GetArg("hello")
+	
+	if err.Unwrap() != nil {
 		res := &shell.Shell{}
 
-		res.Err(&e)
+		res.Err(err)
 
 		return res
-	}
+    }
 
-	helloWorld := args[0].(string)
-
-	fmt.Println(helloWorld)
+	fmt.Println(helloWorld.(string))
 
 	return &shell.Shell{}
 }
 
 // errFunc is the function to be ran in case of error. The function signature
-// must match func(e *err.EscargotError, args ...any) *shell.Shell
-func errFunc(e *err.EscargotError, args ...any) {
-	if e.Unwrap() != nil {
-		log.Fatal(e.Unwrap())
-	}
+// must match func(e *err.EscargotError, args args argument.Arguments) *shell.Shell
+func errFunc(e *error.EscargotError, args argument.Arguments) {
+	log.Fatal(e.Unwrap())
 }
 
 func main() {
-	tr, e := trier.NewTrier(printHelloWorld, errFunc)
-	if e != nil {
-		log.Fatal(e.Error())
+	// create your trier
+	tr, err := trier.NewTrier(printHelloWorld, errFunc)
+	if err != nil {
+		log.Fatal(err.Error())
 	}
+	
+	// tArgs are arguments to be used in the tryFunc (printHelloWorld in this case)
+	tArgs := argument.NewArguments()
+	
+	// set an argument with the value "hello world" with the key "hello"; this
+	// allows for more of a guarantee that casting the value to the necessary type
+	// in the tryFunc will be successful; if you want to update/override a value at
+	// the given key, you should pass in an argument.OverRide as the last
+	// argument instead of nil
+	tArgs.SetArg("hello", "hello world", nil)
 
-	tr.Try([]any{}, []any{})
+	// cArgs are arguments to be used in the catchFunc (errFunc in this case)
+	cArgs := argument.NewArguments()
+
+	tr.Try(*tArgs, *cArgs)
 }
 
 ```
