@@ -1,5 +1,5 @@
 # escargot
-Go's try catch package
+Go's try/catch/finally package
 
 Simple Hello World Example
 
