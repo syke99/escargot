@@ -3,6 +3,7 @@ package resources
 import "errors"
 
 const ErrLevel = "Error"
+const CancelLevel = "Cancel"
 
 type Err int
 
@@ -12,6 +13,7 @@ const (
 	NoKeyProvidedSet
 	DeleteNonExistentValue
 	OverRideWithoutOverRider
+	ContextCancel
 )
 
 func (e Err) Error() error {
@@ -21,6 +23,7 @@ func (e Err) Error() error {
 		errors.New("no key provided to set value with"),
 		errors.New("attempt to delete non-existent value"),
 		errors.New("attempt to override value without explicit OverRide provided"),
+		errors.New("context cancel signal received"),
 	}[e]
 }
 
@@ -30,6 +33,7 @@ const (
 	NoKeyProvided ErrMsg = iota
 	NonExistentValue
 	OverRideNotAllowed
+	CanceledContext
 )
 
 func (em ErrMsg) String() string {
@@ -37,5 +41,6 @@ func (em ErrMsg) String() string {
 		"no key provided",
 		"value with key %s does not exist",
 		"attempt to override an already existing key/value pair with nil OverRide",
+		"context canceled",
 	}[em]
 }
