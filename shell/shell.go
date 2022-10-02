@@ -107,6 +107,14 @@ func (s *Shell) RemoveValue(key string) *err.EscargotError {
 
 	delete(s.values, key)
 
+	vals := make(map[string]any)
+
+	for k, v := range s.values {
+		vals[k] = v
+	}
+
+	s.values = vals
+
 	return nil
 }
 
