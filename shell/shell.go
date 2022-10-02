@@ -3,8 +3,10 @@ package shell
 import (
 	"context"
 	"fmt"
-	"github.com/syke99/escargot/internal/resources"
 	"sync"
+
+	"github.com/syke99/escargot/internal/build"
+	"github.com/syke99/escargot/internal/resources"
 
 	"github.com/syke99/escargot/internal/override"
 
@@ -32,10 +34,7 @@ func (s *Shell) Err(err *err.EscargotError) {
 
 // GetErrStatus returns the status of whether err is set
 func (s *Shell) GetErrStatus() bool {
-	if s.err != nil {
-		return true
-	}
-	return false
+	return s.err != nil
 }
 
 // GetErr returns the EscargotError created whenever attempting to try the provided tryFunc
@@ -47,19 +46,8 @@ func (s *Shell) GetValues() map[string]any {
 	return s.values
 }
 
-func (s *Shell) buildErr(e resources.Err, m string) *err.EscargotError {
-	escErr := err.EscargotError{
-		Level: resources.ErrLevel,
-		Msg:   m,
-	}
-
-	escErr.Err(e.Error())
-
-	return &escErr
-}
-
-func (s *Shell) buildErrVal(e resources.Err, m string) *Shell {
-	errVal.Err(s.buildErr(e, m))
+func (s *Shell) buildErrVal(e resources.Err, l, m string) *Shell {
+	errVal.Err(build.BuildErr(e, l, m))
 
 	return &errVal
 }
@@ -72,13 +60,13 @@ func (s *Shell) GetValue(key string) any {
 	defer s.Unlock()
 
 	if key == "" {
-		return s.buildErr(resources.SetWithoutKey, resources.NoKeyProvided.String())
+		return build.BuildErr(resources.SetWithoutKey, resources.ErrLevel, resources.NoKeyProvided.String())
 	}
 
 	v, ok := s.values[key]
 
 	if !ok {
-		return s.buildErr(resources.AccessNonExistentValue, fmt.Sprintf(resources.NonExistentValue.String(), key))
+		return build.BuildErr(resources.AccessNonExistentValue, resources.ErrLevel, fmt.Sprintf(resources.NonExistentValue.String(), key))
 	}
 
 	return v
@@ -95,11 +83,11 @@ func (s *Shell) SetValue(key string, value any, override OverRide) any {
 	defer s.Unlock()
 
 	if key == "" {
-		return s.buildErr(resources.NoKeyProvidedSet, resources.NoKeyProvided.String())
+		return build.BuildErr(resources.NoKeyProvidedSet, resources.ErrLevel, resources.NoKeyProvided.String())
 	}
 
 	if override == nil {
-		return s.buildErr(resources.OverRideWithoutOverRider, resources.OverRideNotAllowed.String())
+		return build.BuildErr(resources.OverRideWithoutOverRider, resources.ErrLevel, resources.OverRideNotAllowed.String())
 	}
 
 	s.values[key] = value
@@ -114,7 +102,7 @@ func (s *Shell) RemoveValue(key string) *err.EscargotError {
 
 	_, ok := s.values[key]
 	if !ok {
-		return s.buildErr(resources.DeleteNonExistentValue, resources.NonExistentValue.String())
+		return build.BuildErr(resources.DeleteNonExistentValue, resources.ErrLevel, resources.NonExistentValue.String())
 	}
 
 	delete(s.values, key)
@@ -128,13 +116,13 @@ func (s *Shell) RemoveValue(key string) *err.EscargotError {
 func (s *Shell) CallBackX(key string, cb callback.CallBackX, cbValOverRide OverRide) *Shell {
 
 	if key == "" {
-		return s.buildErrVal(resources.SetWithoutKey, resources.NoKeyProvided.String())
+		return s.buildErrVal(resources.SetWithoutKey, resources.ErrLevel, resources.NoKeyProvided.String())
 	}
 
 	v, ok := s.values[key]
 
 	if !ok {
-		return s.buildErrVal(resources.AccessNonExistentValue, resources.NonExistentValue.String())
+		return s.buildErrVal(resources.AccessNonExistentValue, resources.ErrLevel, resources.NonExistentValue.String())
 	}
 
 	sh := Shell{
@@ -175,7 +163,7 @@ func (s *Shell) Range(cb callback.CallBackX, cbValOverRide OverRide) []*Shell {
 				err:    nil,
 			}
 
-			val, er := cb.CallBackX(k, v, cbValOverRide)
+			val, er := cb.CallBackX(key, v, cbValOverRide)
 
 			for i, v := range val {
 				sh.SetValue(fmt.Sprintf("cbValNum%d", i), v, cbValOverRide)

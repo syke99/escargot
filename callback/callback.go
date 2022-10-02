@@ -3,6 +3,7 @@ package callback
 import (
 	"context"
 	"errors"
+	"github.com/syke99/escargot/internal/build"
 	"github.com/syke99/escargot/internal/override"
 	"github.com/syke99/escargot/internal/resources"
 
@@ -32,17 +33,6 @@ func (c CallBack) CallBack() ([]any, *err.EscargotError) {
 	return c.cb(c.args)
 }
 
-func buildErr(e resources.Err, m string) *err.EscargotError {
-	escErr := err.EscargotError{
-		Level: resources.CancelLevel,
-		Msg:   m,
-	}
-
-	escErr.Err(e.Error())
-
-	return &escErr
-}
-
 // CallBackWithCancellation works just like CallBack, but takes a context
 // to cancel execution
 func (c CallBack) CallBackWithCancellation(ctx context.Context, cancel context.CancelFunc) ([]any, *err.EscargotError) {
@@ -57,7 +47,7 @@ func (c CallBack) CallBackWithCancellation(ctx context.Context, cancel context.C
 
 		return res, er
 	case <-ctx.Done():
-		return nil, buildErr(resources.ContextCancel, resources.CanceledContext.String())
+		return nil, build.BuildErr(resources.ContextCancel, resources.ErrLevel, resources.CanceledContext.String())
 	}
 }
 
@@ -87,7 +77,7 @@ func (c CallBackX) CallBackXWithCancellation(ctx context.Context, cancel context
 
 		return res, er
 	case <-ctx.Done():
-		return nil, buildErr(resources.ContextCancel, resources.CanceledContext.String())
+		return nil, build.BuildErr(resources.ContextCancel, resources.ErrLevel, resources.CanceledContext.String())
 	}
 }
 
