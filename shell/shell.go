@@ -190,12 +190,14 @@ func (s *Shell) Range(cb callback.CallBackX) []*Shell {
 
 	var wg sync.WaitGroup
 
-	for _, v := range s.values {
+	for k, v := range s.values {
 		v := v
+
+		key := k
 
 		wg.Add(1)
 
-		go func(v any) {
+		go func(key string, v any) {
 			defer wg.Done()
 
 			sh := Shell{
@@ -205,11 +207,11 @@ func (s *Shell) Range(cb callback.CallBackX) []*Shell {
 
 			val, er := cb.CallBackX(v)
 
-			sh.SetValue("value", val)
+			sh.SetValue(key, val)
 			sh.Err(er)
 
 			results = append(results, &sh)
-		}(v)
+		}(key, v)
 	}
 
 	wg.Wait()
@@ -226,12 +228,14 @@ func (s *Shell) RangeWithCancel(ctx context.Context, cb callback.CallBackX) ([]*
 
 	var wg sync.WaitGroup
 
-	for _, v := range s.values {
+	for key, v := range s.values {
 		v := v
+
+		key := key
 
 		wg.Add(1)
 
-		go func(v any) {
+		go func(key string, v any) {
 			defer wg.Done()
 
 			sh := Shell{
@@ -241,11 +245,11 @@ func (s *Shell) RangeWithCancel(ctx context.Context, cb callback.CallBackX) ([]*
 
 			val, er := cb.CallBackXWithCancellation(ctx, cancel, v)
 
-			sh.SetValue("value", val)
+			sh.SetValue(key, val)
 			sh.Err(er)
 
 			results = append(results, &sh)
-		}(v)
+		}(key, v)
 	}
 
 	wg.Wait()
