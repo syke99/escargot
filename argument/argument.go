@@ -44,7 +44,7 @@ func (a Arguments) GetArgsSlice() []any {
 }
 
 // GetArg returns the argument set with the given key
-func (a *Arguments) GetArg(key string) (any, err.EscargotError) {
+func (a *Arguments) GetArg(key string) (any, *err.EscargotError) {
 	a.Lock()
 	defer a.Unlock()
 	arg, ok := a.args[key]
@@ -59,7 +59,7 @@ func (a *Arguments) GetArg(key string) (any, err.EscargotError) {
 
 		escErr.Err(er)
 
-		return nil, escErr
+		return nil, &escErr
 	}
 
 	if !ok {
@@ -72,10 +72,10 @@ func (a *Arguments) GetArg(key string) (any, err.EscargotError) {
 
 		escErr.Err(er)
 
-		return nil, escErr
+		return nil, &escErr
 	}
 
-	return &arg, err.EscargotError{}
+	return &arg, &err.EscargotError{}
 }
 
 // OverRide is used to signal to *argument.Arguments.SetArg() that an argument
@@ -86,7 +86,7 @@ type OverRide *override.OverRider
 // an OverRider in case of a pre-existing key. If a key already exists but no
 // OverRider is provided, this method will error. If the key does not exist, the
 // value will be added to the arguments
-func (a *Arguments) SetArg(key string, value any, override OverRide) err.EscargotError {
+func (a *Arguments) SetArg(key string, value any, override OverRide) *err.EscargotError {
 	a.Lock()
 	defer a.Unlock()
 
@@ -100,7 +100,7 @@ func (a *Arguments) SetArg(key string, value any, override OverRide) err.Escargo
 
 		escErr.Err(er)
 
-		return escErr
+		return &escErr
 	}
 
 	_, ok := a.args[key]
@@ -115,12 +115,12 @@ func (a *Arguments) SetArg(key string, value any, override OverRide) err.Escargo
 
 		escErr.Err(er)
 
-		return escErr
+		return &escErr
 	}
 
 	a.args[key] = &value
 
-	return err.EscargotError{}
+	return &err.EscargotError{}
 }
 
 // RemoveArg removes the argument from the *argument.Arguments this method is

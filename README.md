@@ -18,9 +18,13 @@ import (
 // printHelloWorld is the function to be tried. The function signature
 // must match func(args ...any) *shell.Shell
 func printHelloWorld(args argument.Arguments) *shell.Shell {
+	// get the argument with the value "hello"
 	helloWorld, err := args.GetArg("hello")
 	
-	if err.Unwrap() != nil {
+	// make sure there is no error. If not, add it to the result (*shell.Shell);
+	// nesting the error like this supports the *shell.Shell.Range() and
+	// *shell.Shell.RangeWithCancel() methods
+	if err != nil {
 		res := &shell.Shell{}
 
 		res.Err(err)
@@ -28,6 +32,8 @@ func printHelloWorld(args argument.Arguments) *shell.Shell {
 		return res
     }
 
+	// to use the value returned from args.getArg(), simply cast it to
+	// the necessary type
 	fmt.Println(helloWorld.(string))
 
 	return &shell.Shell{}

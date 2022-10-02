@@ -55,21 +55,21 @@ func (s *Shell) buildErrVal(e resources.Err, l, m string) *Shell {
 // GetValue returns the value stored in the Shell with the given key as
 // an interface (any). You can then use the value as you would any interface
 // value (casting, switching, reflection, etc.)
-func (s *Shell) GetValue(key string) any {
+func (s *Shell) GetValue(key string) (any, *err.EscargotError) {
 	s.Lock()
 	defer s.Unlock()
 
 	if key == "" {
-		return build.BuildErr(resources.SetWithoutKey, resources.ErrLevel, resources.NoKeyProvided.String())
+		return nil, build.BuildErr(resources.SetWithoutKey, resources.ErrLevel, resources.NoKeyProvided.String())
 	}
 
 	v, ok := s.values[key]
 
 	if !ok {
-		return build.BuildErr(resources.AccessNonExistentValue, resources.ErrLevel, fmt.Sprintf(resources.NonExistentValue.String(), key))
+		return nil, build.BuildErr(resources.AccessNonExistentValue, resources.ErrLevel, fmt.Sprintf(resources.NonExistentValue.String(), key))
 	}
 
-	return v
+	return v, nil
 }
 
 // OverRide is used to signal to *shell.Shell.SetValue() that a
