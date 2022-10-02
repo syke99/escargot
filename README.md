@@ -16,7 +16,7 @@ import (
 )
 
 // printHelloWorld is the function to be tried. The function signature
-// must match func(args ...any) *shell.Shell
+// must match func(args argument.Arguments) *shell.Shell
 func printHelloWorld(args argument.Arguments) *shell.Shell {
 	// get the argument with the value "hello"
 	helloWorld, err := args.GetArg("hello")
