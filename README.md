@@ -41,7 +41,7 @@ func printHelloWorld(args argument.Arguments) *shell.Shell {
 
 // errFunc is the function to be ran in case of error. The function signature
 // must match func(e *err.EscargotError, args args argument.Arguments) *shell.Shell
-func errFunc(e *error.EscargotError, args argument.Arguments) {
+func errFunc(e *error.EscargotError, args argument.Arguments) *shell.Shell {
 	log.Fatal(e.Unwrap())
 }
 
