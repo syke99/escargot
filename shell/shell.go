@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/syke99/escargot/argument"
 	"sync"
 
 	"github.com/syke99/escargot/internal/override"
@@ -137,10 +138,10 @@ func (s *Shell) RemoveValue(key string) *err.EscargotError {
 	return &err.EscargotError{}
 }
 
-// CallBack executes a callback.CallBackX function on the value returned from
+// CallBackX executes a callback.CallBackX function on the value returned from
 // the given key. This method will error if a key is not provided or a value is not
 // set at the given key
-func (s *Shell) CallBack(key string, cb callback.CallBackX) *Shell {
+func (s *Shell) CallBackX(key string, cb callback.CallBackX, cbValOverRide argument.OverRide) *Shell {
 
 	if key == "" {
 		er := errors.New("attempt to set value with non-existent key")
@@ -179,9 +180,12 @@ func (s *Shell) CallBack(key string, cb callback.CallBackX) *Shell {
 		err:    nil,
 	}
 
-	val, er := cb.CallBackX(v)
+	val, er := cb.CallBackX(key, v, cbValOverRide)
 
-	sh.SetValue("value", val)
+	for i, v := range val {
+		sh.SetValue(fmt.Sprintf("cbValNum%d", i), v)
+	}
+
 	sh.Err(er)
 
 	return &sh
@@ -189,7 +193,7 @@ func (s *Shell) CallBack(key string, cb callback.CallBackX) *Shell {
 
 // Range ranges over all the values in the shell and executes the given callback for each
 // value
-func (s *Shell) Range(cb callback.CallBackX) []*Shell {
+func (s *Shell) Range(cb callback.CallBackX, cbValOverRide argument.OverRide) []*Shell {
 	results := make([]*Shell, len(s.values))
 
 	var wg sync.WaitGroup
@@ -209,9 +213,12 @@ func (s *Shell) Range(cb callback.CallBackX) []*Shell {
 				err:    nil,
 			}
 
-			val, er := cb.CallBackX(v)
+			val, er := cb.CallBackX(k, v, cbValOverRide)
 
-			sh.SetValue(key, val)
+			for i, v := range val {
+				sh.SetValue(fmt.Sprintf("cbValNum%d", i), v)
+			}
+
 			sh.Err(er)
 
 			results = append(results, &sh)
@@ -225,21 +232,21 @@ func (s *Shell) Range(cb callback.CallBackX) []*Shell {
 
 // RangeWithCancel works just like Range, but takes a context
 // to cancel execution
-func (s *Shell) RangeWithCancel(ctx context.Context, cb callback.CallBackX) ([]*Shell, context.CancelFunc) {
+func (s *Shell) RangeWithCancel(ctx context.Context, cb callback.CallBackX, cbValOverRide argument.OverRide) ([]*Shell, context.CancelFunc) {
 	results := make([]*Shell, len(s.values))
 
 	ctx, cancel := context.WithCancel(ctx)
 
 	var wg sync.WaitGroup
 
-	for key, v := range s.values {
+	for k, v := range s.values {
 		v := v
 
-		key := key
+		k := k
 
 		wg.Add(1)
 
-		go func(key string, v any) {
+		go func(k string, v any) {
 			defer wg.Done()
 
 			sh := Shell{
@@ -247,13 +254,16 @@ func (s *Shell) RangeWithCancel(ctx context.Context, cb callback.CallBackX) ([]*
 				err:    nil,
 			}
 
-			val, er := cb.CallBackXWithCancellation(ctx, cancel, v)
+			val, er := cb.CallBackXWithCancellation(ctx, cancel, k, v, cbValOverRide)
 
-			sh.SetValue(key, val)
+			for i, v := range val {
+				sh.SetValue(fmt.Sprintf("cbValNum%d", i), v)
+			}
+
 			sh.Err(er)
 
 			results = append(results, &sh)
-		}(key, v)
+		}(k, v)
 	}
 
 	wg.Wait()
