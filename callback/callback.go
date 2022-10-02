@@ -3,6 +3,7 @@ package callback
 import (
 	"context"
 	"errors"
+	"github.com/syke99/escargot/internal/override"
 
 	"github.com/syke99/escargot/argument"
 	err "github.com/syke99/escargot/error"
@@ -57,7 +58,7 @@ func (c CallBack) CallBackWithCancellation(ctx context.Context, cancel context.C
 // the current iteration of Ranging over the *shell.Shell values, to
 // execute a callback function without a *shell.Shell value added to
 // the arguments in the callback function, use CallBackX
-func (c CallBackX) CallBackX(key string, value any, overRide argument.OverRide) ([]any, *err.EscargotError) {
+func (c CallBackX) CallBackX(key string, value any, overRide *override.OverRider) ([]any, *err.EscargotError) {
 	c.args.SetArg(key, value, overRide)
 
 	return c.cb(c.args)
@@ -65,7 +66,7 @@ func (c CallBackX) CallBackX(key string, value any, overRide argument.OverRide) 
 
 // CallBackXWithCancellation works just like CallBackX, but takes a context
 // to cancel execution
-func (c CallBackX) CallBackXWithCancellation(ctx context.Context, cancel context.CancelFunc, key string, value any, overRide argument.OverRide) ([]any, *err.EscargotError) {
+func (c CallBackX) CallBackXWithCancellation(ctx context.Context, cancel context.CancelFunc, key string, value any, overRide *override.OverRider) ([]any, *err.EscargotError) {
 
 	select {
 	default:
