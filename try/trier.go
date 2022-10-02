@@ -7,27 +7,31 @@ import (
 	"github.com/syke99/escargot/shell"
 )
 
-type tryFunc func(args ...any) *shell.Shell
+type TryFunc func(args ...any) *shell.Shell
 
-type catchFunc func(err *err.EscargotError, args ...any)
+type CatchFunc func(err *err.EscargotError, args ...any) *shell.Shell
+
+type FinallyFunc func(args ...any) *shell.Shell
 
 // Trier will handle trying the TryFunc provided and execute the provided CatchFunc
 // on error
 type Trier struct {
-	tryFunc   func(args ...any) *shell.Shell
-	catchFunc func(err *err.EscargotError, args ...any)
+	try     func(args ...any) *shell.Shell
+	catch   func(err *err.EscargotError, args ...any) *shell.Shell
+	finally func(args ...any) *shell.Shell
 }
 
 // NewTrier will return a new Trier with the provided TryFunc and CatchFunc
-func NewTrier(try tryFunc, catch catchFunc) (Trier, error) {
+func NewTrier(try TryFunc, catch CatchFunc, finally FinallyFunc) (Trier, error) {
 	if try == nil ||
 		catch == nil {
 		return Trier{}, errors.New("invalid Trier configuration")
 	}
 
 	return Trier{
-		tryFunc:   try,
-		catchFunc: catch,
+		try:     try,
+		catch:   catch,
+		finally: finally,
 	}, nil
 }
 
@@ -41,7 +45,7 @@ func (t Trier) Try(tryArgs argument.Arguments, catchArgs argument.Arguments) *sh
 		targs = append(targs, arg)
 	}
 
-	result := t.tryFunc(targs...)
+	result := t.try(targs...)
 
 	if result.GetErrStatus() {
 		cargs := make([]any, len(catchArgs.GetArgsSlice()))
@@ -50,8 +54,50 @@ func (t Trier) Try(tryArgs argument.Arguments, catchArgs argument.Arguments) *sh
 			cargs = append(cargs, arg)
 		}
 
-		t.catchFunc(result.GetErr(), cargs...)
+		result = t.catch(result.GetErr(), cargs...)
 	}
+
+	return result
+}
+
+// TryFinally works just like Try, but executes a FinallyFunc after the TryFunc
+// and/or CatchFunc, regardless of the outcome of either function
+func (t Trier) TryFinally(tryArgs argument.Arguments, catchArgs argument.Arguments, finallyArgs argument.Arguments) *shell.Shell {
+	targs := make([]any, len(tryArgs.GetArgsSlice()))
+
+	for _, arg := range tryArgs.GetArgsSlice() {
+		targs = append(targs, arg)
+	}
+
+	result := t.try(targs...)
+
+	if result.GetErrStatus() {
+		cargs := make([]any, len(catchArgs.GetArgsSlice()))
+
+		for _, arg := range catchArgs.GetArgsSlice() {
+			cargs = append(cargs, arg)
+		}
+
+		result = t.catch(result.GetErr(), cargs...)
+	}
+
+	fargs := make([]any, len(finallyArgs.GetArgsSlice())+len(result.GetValues()))
+
+	for _, arg := range finallyArgs.GetArgsSlice() {
+		fargs = append(fargs, arg)
+	}
+
+	rargs := argument.NewArguments("", "")
+
+	for k, v := range result.GetValues() {
+		rargs.SetArg(k, v, nil)
+	}
+
+	for _, arg := range rargs.GetArgsSlice() {
+		fargs = append(fargs, arg)
+	}
+
+	result = t.finally(fargs...)
 
 	return result
 }

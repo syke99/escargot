@@ -43,6 +43,10 @@ func (s *Shell) GetErr() *err.EscargotError {
 	return s.err
 }
 
+func (s *Shell) GetValues() map[string]any {
+	return s.values
+}
+
 // GetValue returns the value stored in the Shell with the given key as
 // an interface (any). You can then use the value as you would any interface
 // value (casting, switching, reflection, etc.)

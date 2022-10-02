@@ -33,7 +33,7 @@ func NewArguments(key string, value any) *Arguments {
 
 // GetArgsSlice returns a slice of arguments currently set in the
 // *argument.Arguments this method is called on
-func (a *Arguments) GetArgsSlice() []any {
+func (a Arguments) GetArgsSlice() []any {
 	args := make([]any, len(a.args))
 
 	for _, v := range a.args {
