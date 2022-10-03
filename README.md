@@ -67,13 +67,36 @@ func main() {
 
 	// Finally, execute the chain of Try/Catch/(and if desired)Finally
 	// by providing a TryFunc, CatchFunc, and FinallyFunc, respectively,
-	// along with the appropriate arguments. You can also pass the functions
+	// along with the appropriate arguments. 
+	tr.Try(printHelloWorld, *tArgs).
+		Catch(errFunc, *cArgs).
+		Finally(nil, nil)
+
+	// You can also pass the functions
 	// in as anonymous functions without having to predefine them to match
 	// a more similar style to executing try/catch/finally blocks in other languages.
 	// This allows for the ability to reuse TryFuncs/CatchFuncs/FinallyFuncs accross
 	// your program if desired and appropriately applicable to your use-case
-	tr.Try(printHelloWorld, *tArgs).
-		Catch(errFunc, *cArgs).
+	tr.Try(func(args argument.Arguments) *shell.Shell {
+			res := shell.FreshShell()
+        
+			helloWorld, err := args.GetArg("hello")
+        
+			if err != nil {
+				res.Err(err, "")
+        
+                return res
+            }
+        
+			fmt.Println(helloWorld.(string))
+        
+			return nil
+		}, *tArgs).
+		Catch(func(e *error.EscargotError, args argument.Arguments) *shell.Shell {
+            log.Fatal(e.Unwrap())
+    
+            return nil
+        }, *cArgs).
 		Finally(nil, nil)
 }
 
