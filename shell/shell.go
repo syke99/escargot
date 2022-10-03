@@ -196,3 +196,50 @@ func (s *Shell) Range(cb callback.CallBackX, cbValOverRide OverRide) {
 
 	wg.Wait()
 }
+
+// RangeAtKeys works just like Range, but only executes the callback if
+// a Shell value's key exists in the slice of keys provided
+func (s *Shell) RangeAtKeys(cb callback.CallBackX, cbValOverRide OverRide, keys []string) {
+	var wg sync.WaitGroup
+
+	km := make(map[string]struct{}, len(keys))
+
+	for _, key := range keys {
+		km[key] = struct{}{}
+	}
+
+	for k, v := range s.values {
+		v := v
+
+		key := k
+
+		if _, ok := km[k]; !ok {
+			continue
+		}
+
+		wg.Add(1)
+
+		go func(key string, v any) {
+			defer wg.Done()
+			s.Lock()
+			defer s.Unlock()
+
+			sh := Shell{
+				values: make(map[string]any),
+				err:    nil,
+			}
+
+			val, er := cb.CallBackX(key, v, cbValOverRide)
+
+			for i, v := range val {
+				sh.SetValue(fmt.Sprintf("cbValNum%d", i), v, cbValOverRide)
+			}
+
+			sh.err = er
+
+			s.values[key] = sh
+		}(key, v)
+	}
+
+	wg.Wait()
+}
