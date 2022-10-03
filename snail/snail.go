@@ -1,6 +1,7 @@
 package snail
 
 import (
+	"fmt"
 	"github.com/syke99/escargot/argument"
 	err "github.com/syke99/escargot/error"
 	"github.com/syke99/escargot/shell"
@@ -15,15 +16,18 @@ type FinallyFunc func(args argument.Arguments) *shell.Shell
 // Snail will handle trying the TryFunc provided and execute the provided CatchFunc
 // on error
 type Snail struct {
-	shell *shell.Shell
+	tShell *shell.Shell
+	cShell *shell.Shell
 }
 
 // NewTrier will return a new Snail for chaining together a TryFunc, CatchFunc, and/or FinallyFunc
 func NewSnail() *Snail {
-	shl := shell.Shell{}
+	tShl := shell.Shell{}
+	cShl := shell.Shell{}
 
 	snl := Snail{
-		shell: &shl,
+		tShell: &tShl,
+		cShell: &cShl,
 	}
 
 	return &snl
@@ -32,7 +36,7 @@ func NewSnail() *Snail {
 // Try tries the provided TryFunc with the provided argument.Arguments
 // and sets the value(s) for the Snail to use during Catch and/or Finally
 func (t *Snail) Try(tryFunc TryFunc, tryArgs argument.Arguments) *Snail {
-	t.shell = tryFunc(tryArgs)
+	t.tShell = tryFunc(tryArgs)
 
 	return t
 }
@@ -41,16 +45,21 @@ func (t *Snail) Try(tryFunc TryFunc, tryArgs argument.Arguments) *Snail {
 // with the provided argument.Arguments, and well as any currently set value(s)
 // in the Snail
 func (t *Snail) Catch(catchFunc CatchFunc, catchArgs argument.Arguments) *Snail {
-	if t.shell.GetErrStatus() {
-		for k, v := range t.shell.GetValues() {
+	if t.tShell.GetErrStatus() {
+		for k, v := range t.tShell.GetValues() {
+
+			k = fmt.Sprintf("try-%s", k)
+
 			er := catchArgs.SetArg(k, v, nil)
 
 			if er != nil {
-				t.shell.Err(er, "")
+				t.tShell.Err(er, "")
+
+				t.tShell = t.cShell
 			}
 		}
 
-		t.shell = catchFunc(t.shell.GetErr(), catchArgs)
+		t.cShell = catchFunc(t.tShell.GetErr(), catchArgs)
 	}
 
 	return t
@@ -58,16 +67,27 @@ func (t *Snail) Catch(catchFunc CatchFunc, catchArgs argument.Arguments) *Snail 
 
 // Finally executes the provided FinallyFunc with the provided argument.Arguments
 // along with any currently set value(s) in the Snail, regardless of error status
-func (t *Snail) Finally(finallyFunc FinallyFunc, finallyArgs argument.Arguments) *Snail {
-	for k, v := range t.shell.GetValues() {
+func (t *Snail) Finally(finallyFunc FinallyFunc, finallyArgs argument.Arguments) *shell.Shell {
+	for k, v := range t.tShell.GetValues() {
 		er := finallyArgs.SetArg(k, v, nil)
 
 		if er != nil {
-			t.shell.Err(er, "")
+			t.tShell.Err(er, er.Error())
 		}
 	}
 
-	t.shell = finallyFunc(finallyArgs)
+	for k, v := range t.cShell.GetValues() {
 
-	return t
+		k = fmt.Sprintf("catch-%s", k)
+
+		er := finallyArgs.SetArg(k, v, nil)
+
+		if er != nil {
+			t.tShell.Err(er, er.Error())
+		}
+	}
+
+	t.tShell = finallyFunc(finallyArgs)
+
+	return t.tShell
 }
