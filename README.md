@@ -4,8 +4,6 @@
 [![go reportcard](https://goreportcard.com/badge/github.com/syke99/escargot)](https://goreportcard.com/report/github.com/syke99/escargot)
 ![Go version](https://img.shields.io/github/go-mod/go-version/syke99/escargot)</br>
 # escargot
-A simple try/catch/finally package for Go to cut down on code bloat and boilerplate code whenever implementing 
-
 A simple package for cutting down on code bloat and boilerplate code whenever implementing try/catch/finally
 
 How do I use Escargot?
