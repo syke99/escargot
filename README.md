@@ -1,6 +1,7 @@
 ### Escargot
 
-[![License](https://img.shields.io/github/license/syke99/escargot)](https://github.com/syke99/escargot/blob/master/LICENSE)
+[![Go Reference](https://pkg.go.dev/badge/github.com/syke99/escargot.svg)](https://pkg.go.dev/github.com/syke99/escargot)
+[![go reportcard](https://goreportcard.com/badge/github.com/syke99/escargot)](https://goreportcard.com/report/github.com/syke99/escargot)
 ![Go version](https://img.shields.io/github/go-mod/go-version/syke99/escargot)</br>
 # escargot
 A simple try/catch/finally package for Go to cut down on code bloat and boilerplate code whenever implementing 
