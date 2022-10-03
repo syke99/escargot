@@ -39,22 +39,28 @@ func NewSnail(try TryFunc, catch CatchFunc, finally FinallyFunc) (Snail, error) 
 // Try tries the Trier's TryFunc with the provided tryArgs, and on error,
 // will execute the Trier's CatchFunc with the provided catchArgs. It will
 // return a *shell.Shell to access any values and/or errors
-func (t *Snail) Try(tryArgs argument.Arguments, catchArgs argument.Arguments) {
+func (t *Snail) Try(tryArgs argument.Arguments) *Snail {
 	t.shell = t.try(tryArgs)
+
+	return t
 }
 
-func (t *Snail) Catch(catchArgs argument.Arguments) {
+func (t *Snail) Catch(catchArgs argument.Arguments) *Snail {
 	if t.shell.GetErrStatus() {
 		t.shell = t.catch(t.shell.GetErr(), catchArgs)
 	}
+
+	return t
 }
 
 // Finally works just like Try, but executes a FinallyFunc after the TryFunc
 // and/or CatchFunc, regardless of the outcome of either function
-func (t *Snail) Finally(finallyArgs argument.Arguments) {
+func (t *Snail) Finally(finallyArgs argument.Arguments) *Snail {
 	for k, v := range t.shell.GetValues() {
 		finallyArgs.SetArg(k, v, nil)
 	}
 
 	t.shell = t.finally(finallyArgs)
+
+	return t
 }

@@ -68,7 +68,9 @@ func main() {
 	// cArgs are arguments to be used in the catchFunc (errFunc in this case)
 	cArgs := argument.NewArguments()
 
-	tr.Try(*tArgs, *cArgs)
+	tr.Try(*tArgs).
+		Catch(*cArgs).
+		Finally(nil)
 }
 
 ```
