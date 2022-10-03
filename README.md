@@ -69,36 +69,43 @@ func main() {
 	// Finally, execute the chain of Try/Catch/(and if desired)Finally
 	// by providing a TryFunc, CatchFunc, and FinallyFunc, respectively,
 	// along with the appropriate arguments. 
-	tr.Try(printHelloWorld, *tArgs).
-		Catch(errFunc, *cArgs).
-		Finally(nil, nil)
+	results := tr.Try(printHelloWorld, *tArgs).
+		        Catch(errFunc, *cArgs).
+		        Finally(nil, nil).
+		        GetFinalResults()
+	
+	println(results.GetValues())
 
 	// You can also pass the functions
 	// in as anonymous functions without having to predefine them to match
 	// a more similar style to executing try/catch/finally blocks in other languages.
 	// This allows for the ability to reuse TryFuncs/CatchFuncs/FinallyFuncs accross
 	// your program if desired and appropriately applicable to your use-case
-	tr.Try(func(args argument.Arguments) *shell.Shell {
-		res := shell.FreshShell()
+    results = tr.Try(func(args argument.Arguments) *shell.Shell {
+                    res := shell.FreshShell()
+            
+                    helloWorld, err := args.GetArg("hello")
+            
+                    if err != nil {
+                        res.Err(err, "")
+            
+                        return res
+                    }
+            
+                    fmt.Println(helloWorld.(string))
+            
+                    return res
+                }, *tArgs).
+                    Catch(func(e *error.EscargotError, args argument.Arguments) *shell.Shell {
+                        log.Print(fmt.Sprintf("log: Level %s Error: %v Message: %s", e.Level, e.Unwrap(), e.Msg))
+            
+                        return shell.FreshShell()
+                    }, *cArgs).
+                    Finally(nil, nil).
+                    GetFinalResults()
 
-		helloWorld, err := args.GetArg("hello")
+	println(results.GetValues())
 
-		if err != nil {
-			res.Err(err, "")
-
-			return res
-		}
-
-		fmt.Println(helloWorld.(string))
-
-		return res
-	}, *tArgs).
-		Catch(func(e *error.EscargotError, args argument.Arguments) *shell.Shell {
-		    log.Print(fmt.Sprintf("log: Level %s Error: %v Message: %s", e.Level, e.Unwrap(), e.Msg))
-
-			return shell.FreshShell()
-		}, *cArgs).
-		Finally(nil, nil)
 }
 
 ```

@@ -67,7 +67,7 @@ func (t *Snail) Catch(catchFunc CatchFunc, catchArgs argument.Arguments) *Snail 
 
 // Finally executes the provided FinallyFunc with the provided argument.Arguments
 // along with any currently set value(s) in the Snail, regardless of error status
-func (t *Snail) Finally(finallyFunc FinallyFunc, finallyArgs argument.Arguments) *shell.Shell {
+func (t *Snail) Finally(finallyFunc FinallyFunc, finallyArgs argument.Arguments) *Snail {
 	for k, v := range t.tShell.GetValues() {
 		er := finallyArgs.SetArg(k, v, nil)
 
@@ -89,5 +89,9 @@ func (t *Snail) Finally(finallyFunc FinallyFunc, finallyArgs argument.Arguments)
 
 	t.tShell = finallyFunc(finallyArgs)
 
+	return t
+}
+
+func (t *Snail) GetFinalResults() *shell.Shell {
 	return t.tShell
 }
