@@ -54,8 +54,6 @@ func (t *Snail) Catch(catchFunc CatchFunc, catchArgs argument.Arguments) *Snail 
 
 			if er != nil {
 				t.tShell.Err(er, "")
-
-				t.tShell = t.cShell
 			}
 		}
 
