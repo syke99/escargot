@@ -50,10 +50,7 @@ func errFunc(e *error.EscargotError, args argument.Arguments) *shell.Shell {
 
 func main() {
 	// create your trier
-	tr, err := snail.NewSnail(printHelloWorld, errFunc, nil)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	tr := snail.NewSnail()
 	
 	// tArgs are arguments to be used in the tryFunc (printHelloWorld in this case)
 	tArgs := argument.NewArguments()
@@ -68,9 +65,16 @@ func main() {
 	// cArgs are arguments to be used in the catchFunc (errFunc in this case)
 	cArgs := argument.NewArguments()
 
-	tr.Try(*tArgs).
-		Catch(*cArgs).
-		Finally(nil)
+	// Finally, execute the chain of Try/Catch/(and if desired)Finally
+	// by providing a TryFunc, CatchFunc, and FinallyFunc, respectively,
+	// along with the appropriate arguments. You can also pass the functions
+	// in as anonymous functions without having to predefine them to match
+	// a more similar style to executing try/catch/finally blocks in other languages.
+	// This allows for the ability to reuse TryFuncs/CatchFuncs/FinallyFuncs accross
+	// your program if desired and appropriately applicable to your use-case
+	tr.Try(printHelloWorld, *tArgs).
+		Catch(errFunc, *cArgs).
+		Finally(nil, nil)
 }
 
 ```
