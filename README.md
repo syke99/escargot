@@ -104,17 +104,17 @@ func main() {
             
                     return res
                 }, *tArgs).
-		        Catch(func(e *error.EscargotError, args argument.Arguments) *shell.Shell {
-					log.Print(fmt.Sprintf("log: Level %s Error: %v Message: %s", e.Level, e.Unwrap(), e.Msg))
-            
-					return shell.FreshShell()
-				}, *cArgs).
-		        Finally(func(args argument.Arguments) *shell.Shell {
-					fmt.Println("Try/Catch/Finally block complete")
+		Catch(func(e *error.EscargotError, args argument.Arguments) *shell.Shell {
+			log.Print(fmt.Sprintf("log: Level %s Error: %v Message: %s", e.Level, e.Unwrap(), e.Msg))
 
-					return shell.FreshShell()
-				}, nil).
-		        GetFinalResults()
+			return shell.FreshShell()
+		}, *cArgs).
+		Finally(func(args argument.Arguments) *shell.Shell {
+			fmt.Println("Try/Catch/Finally block complete")
+
+			return shell.FreshShell()
+			}, nil).
+		GetFinalResults()
 
 	println(results.GetValues())
 
