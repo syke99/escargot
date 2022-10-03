@@ -89,7 +89,7 @@ type OverRide *override.OverRider
 
 // SetValue sets the given value in the shell with the given key. To retrieve the value,
 // use *Shell.GetValue(key string). To remove the value, use *Shell.RemoveValue(key string) *error.Escargot
-func (s *Shell) SetValue(key string, value any, override OverRide) any {
+func (s *Shell) SetValue(key string, value any, override OverRide) *err.EscargotError {
 	s.Lock()
 	defer s.Unlock()
 
