@@ -38,7 +38,7 @@ func printHelloWorld(args argument.Arguments) *shell.Shell {
 	// the necessary type
 	fmt.Println(helloWorld.(string))
 
-	return nil
+	return shell.FreshShell()
 }
 
 // errFunc is the function to be ran in case of error. The function signature
@@ -46,7 +46,15 @@ func printHelloWorld(args argument.Arguments) *shell.Shell {
 func errFunc(e *error.EscargotError, args argument.Arguments) *shell.Shell {
 	log.Fatal(e.Unwrap())
 
-	return nil
+	return shell.FreshShell()
+}
+
+// finalFunc is the function to be ran in the Finally portion of a 
+// Try/Catch/Finally block of code
+func finalFunc(args argument.Arguments) *shell.Shell {
+	fmt.Println("Try/Catch/Finally block complete")
+	
+	return shell.FreshShell()
 }
 
 func main() {
@@ -71,7 +79,7 @@ func main() {
 	// along with the appropriate arguments. 
 	results := tr.Try(printHelloWorld, *tArgs).
 		        Catch(errFunc, *cArgs).
-		        Finally(nil, nil).
+		        Finally(finalFunc, nil).
 		        GetFinalResults()
 	
 	println(results.GetValues())
@@ -101,7 +109,11 @@ func main() {
             
                         return shell.FreshShell()
                     }, *cArgs).
-                    Finally(nil, nil).
+		            Finally(func(args argument.Arguments) *shell.Shell {
+		                fmt.Println("Try/Catch/Finally block complete")
+
+		                return shell.FreshShell()
+	                }, nil).
                     GetFinalResults()
 
 	println(results.GetValues())
