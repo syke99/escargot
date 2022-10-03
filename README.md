@@ -50,7 +50,7 @@ func errFunc(e *error.EscargotError, args argument.Arguments) *shell.Shell {
 
 func main() {
 	// create your trier
-	tr, err := trier.NewTrier(printHelloWorld, errFunc)
+	tr, err := try.NewTrier(printHelloWorld, errFunc, nil)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
