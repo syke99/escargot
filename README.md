@@ -11,7 +11,7 @@ How do I use Escargot?
 ### Installation
 
 ```
-go get github.com/syke99/dynaQ
+go get github.com/syke99/escargot
 ```
 
 ### Simple Hello World Example
