@@ -5,7 +5,7 @@
 
 A simple package for cutting down on code bloat and boilerplate code whenever implementing try/catch/finally
 
-How do I use dynaQ?
+How do I use Escargot?
 ====
 
 ### Installation
