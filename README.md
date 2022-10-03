@@ -8,12 +8,13 @@ package main
 
 import (
 	"fmt"
+	"log"
+	
 	"github.com/syke99/escargot/argument"
 	"github.com/syke99/escargot/error"
 	"github.com/syke99/escargot/internal/resources"
 	"github.com/syke99/escargot/shell"
 	"github.com/syke99/escargot/snail"
-	"log"
 )
 
 // printHelloWorld is the function to be tried. The function signature
