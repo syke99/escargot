@@ -2,6 +2,8 @@
 
 [![License](https://img.shields.io/github/license/syke99/escargot)](https://github.com/syke99/escargot/blob/master/LICENSE)
 ![Go version](https://img.shields.io/github/go-mod/go-version/syke99/escargot)</br>
+# escargot
+A simple try/catch/finally package for Go to cut down on code bloat and boilerplate code whenever implementing 
 
 A simple package for cutting down on code bloat and boilerplate code whenever implementing try/catch/finally
 
