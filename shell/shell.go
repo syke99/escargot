@@ -26,9 +26,21 @@ var errVal = Shell{
 	err:    nil,
 }
 
+func FreshShell() *Shell {
+	shell := Shell{}
+
+	return &shell
+}
+
 // Err sets an err
-func (s *Shell) Err(err *err.EscargotError) {
-	s.err = err
+func (s *Shell) Err(er error, message string) {
+	if message == "" {
+		message = er.Error()
+	}
+
+	e := build.BuildCustomErr(er, resources.ErrLevel, message)
+
+	s.err = e
 }
 
 // GetErrStatus returns the status of whether err is set
@@ -46,7 +58,7 @@ func (s *Shell) GetValues() map[string]any {
 }
 
 func (s *Shell) buildErrVal(e resources.Err, l, m string) *Shell {
-	errVal.Err(build.BuildErr(e, l, m))
+	errVal.err = build.BuildErr(e, l, m)
 
 	return &errVal
 }
@@ -143,7 +155,7 @@ func (s *Shell) CallBackX(key string, cb callback.CallBackX, cbValOverRide OverR
 		sh.SetValue(key, v, cbValOverRide)
 	}
 
-	sh.Err(er)
+	sh.err = er
 
 	return &sh
 }
@@ -176,7 +188,7 @@ func (s *Shell) Range(cb callback.CallBackX, cbValOverRide OverRide) {
 				sh.SetValue(fmt.Sprintf("cbValNum%d", i), v, cbValOverRide)
 			}
 
-			sh.Err(er)
+			sh.err = er
 
 			s.values[key] = sh
 		}(key, v)

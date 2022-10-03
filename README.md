@@ -18,6 +18,9 @@ import (
 // printHelloWorld is the function to be tried. The function signature
 // must match func(args argument.Arguments) *shell.Shell
 func printHelloWorld(args argument.Arguments) *shell.Shell {
+	// create a "Shell" to hold your values and/or error
+	res := shell.FreshShell()
+	
 	// get the argument with the value "hello"
 	helloWorld, err := args.GetArg("hello")
 	
@@ -25,9 +28,7 @@ func printHelloWorld(args argument.Arguments) *shell.Shell {
 	// nesting the error like this supports the *shell.Shell.Range() and
 	// *shell.Shell.RangeWithCancel() methods
 	if err != nil {
-		res := &shell.Shell{}
-
-		res.Err(err)
+		res.Err(err, "")
 
 		return res
     }
@@ -36,13 +37,15 @@ func printHelloWorld(args argument.Arguments) *shell.Shell {
 	// the necessary type
 	fmt.Println(helloWorld.(string))
 
-	return &shell.Shell{}
+	return nil
 }
 
 // errFunc is the function to be ran in case of error. The function signature
 // must match func(e *err.EscargotError, args args argument.Arguments) *shell.Shell
 func errFunc(e *error.EscargotError, args argument.Arguments) *shell.Shell {
 	log.Fatal(e.Unwrap())
+	
+	return nil
 }
 
 func main() {

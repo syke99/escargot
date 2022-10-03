@@ -14,6 +14,7 @@ const (
 	DeleteNonExistentValue
 	OverRideWithoutOverRider
 	ContextCancel
+	NoKeyProvidedAccess
 )
 
 func (e Err) Error() error {
@@ -24,6 +25,7 @@ func (e Err) Error() error {
 		errors.New("attempt to delete non-existent value"),
 		errors.New("attempt to override value without explicit OverRide provided"),
 		errors.New("context cancel signal received"),
+		errors.New("attempt to access value without prividing key"),
 	}[e]
 }
 

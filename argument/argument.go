@@ -1,7 +1,7 @@
 package argument
 
 import (
-	"errors"
+	"github.com/syke99/escargot/internal/resources"
 	"sync"
 
 	err "github.com/syke99/escargot/error"
@@ -44,38 +44,24 @@ func (a Arguments) GetArgsSlice() []any {
 }
 
 // GetArg returns the argument set with the given key
-func (a *Arguments) GetArg(key string) (any, *err.EscargotError) {
+func (a *Arguments) GetArg(key string) (any, error) {
 	a.Lock()
 	defer a.Unlock()
 	arg, ok := a.args[key]
 
 	if key == "" {
-		er := errors.New("no key provided to retrieve argument with")
+		er := resources.NoKeyProvidedAccess.Error()
 
-		escErr := err.EscargotError{
-			Level: "Error",
-			Msg:   "no key provided",
-		}
-
-		escErr.Err(er)
-
-		return nil, &escErr
+		return nil, er
 	}
 
 	if !ok {
-		er := errors.New("argument does not exist in this set of arguments")
+		er := resources.AccessNonExistentValue.Error()
 
-		escErr := err.EscargotError{
-			Level: "Error",
-			Msg:   "nox-existent argument in arguments",
-		}
-
-		escErr.Err(er)
-
-		return nil, &escErr
+		return nil, er
 	}
 
-	return &arg, &err.EscargotError{}
+	return &arg, nil
 }
 
 // OverRide is used to signal to *argument.Arguments.SetArg() that an argument
@@ -86,36 +72,22 @@ type OverRide *override.OverRider
 // an OverRider in case of a pre-existing key. If a key already exists but no
 // OverRider is provided, this method will error. If the key does not exist, the
 // value will be added to the arguments
-func (a *Arguments) SetArg(key string, value any, override OverRide) *err.EscargotError {
+func (a *Arguments) SetArg(key string, value any, override OverRide) error {
 	a.Lock()
 	defer a.Unlock()
 
 	if key == "" {
-		er := errors.New("no key provided to set argument with")
+		err := resources.NoKeyProvidedSet.Error()
 
-		escErr := err.EscargotError{
-			Level: "Error",
-			Msg:   "no key provided",
-		}
-
-		escErr.Err(er)
-
-		return &escErr
+		return err
 	}
 
 	_, ok := a.args[key]
 
 	if ok && override == nil {
-		er := errors.New("attempt to override argument value without a provided OverRider")
+		err := resources.OverRideWithoutOverRider.Error()
 
-		escErr := err.EscargotError{
-			Level: "Error",
-			Msg:   "override not explicitly allowed",
-		}
-
-		escErr.Err(er)
-
-		return &escErr
+		return err
 	}
 
 	a.args[key] = &value
