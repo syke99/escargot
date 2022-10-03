@@ -1,4 +1,4 @@
-package try
+package snail
 
 import (
 	"errors"
@@ -13,22 +13,23 @@ type CatchFunc func(err *err.EscargotError, args argument.Arguments) *shell.Shel
 
 type FinallyFunc func(args argument.Arguments) *shell.Shell
 
-// Trier will handle trying the TryFunc provided and execute the provided CatchFunc
+// Snail will handle trying the TryFunc provided and execute the provided CatchFunc
 // on error
-type Trier struct {
+type Snail struct {
+	shell   *shell.Shell
 	try     func(args argument.Arguments) *shell.Shell
 	catch   func(err *err.EscargotError, args argument.Arguments) *shell.Shell
 	finally func(args argument.Arguments) *shell.Shell
 }
 
 // NewTrier will return a new Trier with the provided TryFunc and CatchFunc
-func NewTrier(try TryFunc, catch CatchFunc, finally FinallyFunc) (Trier, error) {
+func NewSnail(try TryFunc, catch CatchFunc, finally FinallyFunc) (Snail, error) {
 	if try == nil ||
 		catch == nil {
-		return Trier{}, errors.New("invalid Trier configuration")
+		return Snail{}, errors.New("invalid Trier configuration")
 	}
 
-	return Trier{
+	return Snail{
 		try:     try,
 		catch:   catch,
 		finally: finally,
@@ -38,30 +39,22 @@ func NewTrier(try TryFunc, catch CatchFunc, finally FinallyFunc) (Trier, error) 
 // Try tries the Trier's TryFunc with the provided tryArgs, and on error,
 // will execute the Trier's CatchFunc with the provided catchArgs. It will
 // return a *shell.Shell to access any values and/or errors
-func (t Trier) Try(tryArgs argument.Arguments, catchArgs argument.Arguments) *shell.Shell {
-	result := t.try(tryArgs)
-
-	if result.GetErrStatus() {
-		result = t.catch(result.GetErr(), catchArgs)
-	}
-
-	return result
+func (t *Snail) Try(tryArgs argument.Arguments, catchArgs argument.Arguments) {
+	t.shell = t.try(tryArgs)
 }
 
-// TryFinally works just like Try, but executes a FinallyFunc after the TryFunc
-// and/or CatchFunc, regardless of the outcome of either function
-func (t Trier) TryFinally(tryArgs argument.Arguments, catchArgs argument.Arguments, finallyArgs argument.Arguments) *shell.Shell {
-	result := t.try(tryArgs)
-
-	if result.GetErrStatus() {
-		result = t.catch(result.GetErr(), catchArgs)
+func (t *Snail) Catch(catchArgs argument.Arguments) {
+	if t.shell.GetErrStatus() {
+		t.shell = t.catch(t.shell.GetErr(), catchArgs)
 	}
+}
 
-	for k, v := range result.GetValues() {
+// Finally works just like Try, but executes a FinallyFunc after the TryFunc
+// and/or CatchFunc, regardless of the outcome of either function
+func (t *Snail) Finally(finallyArgs argument.Arguments) {
+	for k, v := range t.shell.GetValues() {
 		finallyArgs.SetArg(k, v, nil)
 	}
 
-	result = t.finally(finallyArgs)
-
-	return result
+	t.shell = t.finally(finallyArgs)
 }

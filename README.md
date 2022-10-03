@@ -11,7 +11,7 @@ import (
 	"github.com/syke99/escargot/argument"
 	"github.com/syke99/escargot/error"
 	"github.com/syke99/escargot/shell"
-	"github.com/syke99/escargot/try"
+	"github.com/syke99/escargot/snail"
 	"log"
 )
 
@@ -50,7 +50,7 @@ func errFunc(e *error.EscargotError, args argument.Arguments) *shell.Shell {
 
 func main() {
 	// create your trier
-	tr, err := try.NewTrier(printHelloWorld, errFunc, nil)
+	tr, err := snail.NewSnail(printHelloWorld, errFunc, nil)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
