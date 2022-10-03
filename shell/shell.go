@@ -1,7 +1,6 @@
 package shell
 
 import (
-	"context"
 	"fmt"
 	"sync"
 
@@ -140,8 +139,8 @@ func (s *Shell) CallBackX(key string, cb callback.CallBackX, cbValOverRide OverR
 
 	val, er := cb.CallBackX(key, v, cbValOverRide)
 
-	for i, v := range val {
-		sh.SetValue(fmt.Sprintf("cbValNum%d", i), v, cbValOverRide)
+	for _, v := range val {
+		sh.SetValue(key, v, cbValOverRide)
 	}
 
 	sh.Err(er)
@@ -151,9 +150,7 @@ func (s *Shell) CallBackX(key string, cb callback.CallBackX, cbValOverRide OverR
 
 // Range ranges over all the values in the shell and executes the given callback for each
 // value
-func (s *Shell) Range(cb callback.CallBackX, cbValOverRide OverRide) []*Shell {
-	results := make([]*Shell, len(s.values))
-
+func (s *Shell) Range(cb callback.CallBackX, cbValOverRide OverRide) {
 	var wg sync.WaitGroup
 
 	for k, v := range s.values {
@@ -165,6 +162,8 @@ func (s *Shell) Range(cb callback.CallBackX, cbValOverRide OverRide) []*Shell {
 
 		go func(key string, v any) {
 			defer wg.Done()
+			s.Lock()
+			defer s.Unlock()
 
 			sh := Shell{
 				values: make(map[string]any),
@@ -179,52 +178,9 @@ func (s *Shell) Range(cb callback.CallBackX, cbValOverRide OverRide) []*Shell {
 
 			sh.Err(er)
 
-			results = append(results, &sh)
+			s.values[key] = sh
 		}(key, v)
 	}
 
 	wg.Wait()
-
-	return results
-}
-
-// RangeWithCancel works just like Range, but takes a context
-// to cancel execution
-func (s *Shell) RangeWithCancel(ctx context.Context, cb callback.CallBackX, cbValOverRide OverRide) ([]*Shell, context.CancelFunc) {
-	results := make([]*Shell, len(s.values))
-
-	ctx, cancel := context.WithCancel(ctx)
-
-	var wg sync.WaitGroup
-
-	for k, v := range s.values {
-		v := v
-
-		k := k
-
-		wg.Add(1)
-
-		go func(k string, v any) {
-			defer wg.Done()
-
-			sh := Shell{
-				values: make(map[string]any),
-				err:    nil,
-			}
-
-			val, er := cb.CallBackXWithCancellation(ctx, cancel, k, v, cbValOverRide)
-
-			for i, v := range val {
-				sh.SetValue(fmt.Sprintf("cbValNum%d", i), v, cbValOverRide)
-			}
-
-			sh.Err(er)
-
-			results = append(results, &sh)
-		}(k, v)
-	}
-
-	wg.Wait()
-
-	return results, cancel
 }
